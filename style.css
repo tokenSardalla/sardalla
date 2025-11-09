@@ -1,6 +1,6 @@
 body {
-  background-color: #001f5c;
-  color: #fff;
+  background: radial-gradient(circle at center, #00206b 0%, #000f35 100%);
+  color: #ffffff;
   font-family: "Segoe UI", Roboto, sans-serif;
   text-align: center;
   margin: 0;
@@ -8,17 +8,37 @@ body {
 }
 
 header {
-  padding: 30px 10px;
+  padding: 40px 15px 20px;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
 }
 
 .logo {
-  width: 120px;
-  margin-bottom: 10px;
+  width: 150px;
+  height: auto;
+  border-radius: 50%;
+  border: 3px solid #ffce00;
+  background: #00206b;
 }
 
 h1 {
   color: #ffce00;
-  margin-bottom: 5px;
+  margin: 10px 0 5px;
+  font-size: 2em;
+}
+
+.subtitle {
+  font-size: 1.1em;
+  opacity: 0.85;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 h2 {
@@ -26,17 +46,28 @@ h2 {
   border-bottom: 2px solid #ffce00;
   display: inline-block;
   margin-bottom: 10px;
+  padding-bottom: 5px;
 }
 
 ul {
   list-style: none;
   padding: 0;
+  line-height: 1.6;
 }
 
 code {
   background: rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .btn {
@@ -46,17 +77,20 @@ code {
   font-weight: bold;
   padding: 10px 20px;
   border-radius: 10px;
-  margin: 8px;
   text-decoration: none;
   transition: 0.3s;
 }
 
 .btn:hover {
   background: #ffd83b;
+  transform: scale(1.05);
 }
 
 footer {
   margin-top: 40px;
   font-size: 14px;
   opacity: 0.8;
+  background: #001540;
+  padding: 15px;
+  border-top: 1px solid #ffce00;
 }

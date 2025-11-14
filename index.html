@@ -2,152 +2,139 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-
+  <link rel="icon" type="image/webp" href="logo_sardalla_96px.webp" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Sardalla (SAR) — BEP-20 Token</title>
-  <meta name="description" content="Sardalla (SAR) is a BEP-20 token on Binance Smart Chain.">
+  <meta name="description" content="Sardalla (SAR) is a BEP-20 token focused on transparency, community governance and multichain experimentation." />
 
-  <!-- SEO / OpenGraph -->
-  <meta property="og:title" content="Sardalla (SAR) — BEP-20 Token" />
-  <meta property="og:description" content="Community-driven BEP-20 token with transparent supply and open development." />
-  <meta property="og:image" content="assets/logo_sardalla_500px.webp" />
-  <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#003A8C"/>
+  <meta name="theme-color" content="#003a8c"/>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-<div class="wrap">
+  <div class="wrap">
 
-  <!-- HEADER -->
-  <header>
-    <div class="brand">
-      <img src="assets/logo_sardalla_96px.webp" alt="Sardalla Logo">
-      <h1>Sardalla <span class="accent">(SAR)</span></h1>
-    </div>
+    <!-- TOP BAR -->
+    <header>
+      <div class="brand">
+        <img src="logo_sardalla_128px.webp" alt="Sardalla Logo">
+        <h1>Sardalla <span class="accent">(SAR)</span></h1>
+      </div>
 
-    <nav class="links-row">
-      <a class="navlink" href="https://bscscan.com/token/0x851d720513ff135007de95bd58b28514093beb25" target="_blank">BscScan</a>
-      <a class="navlink" href="https://github.com/tokenSardalla/sardalla" target="_blank">GitHub</a>
-      <a class="navlink" href="https://t.me/tokensardalla" target="_blank">Telegram</a>
-      <a class="navlink" href="../docs/Sardalla_Whitepaper_EN.pdf" target="_blank">Whitepaper</a>
-    </nav>
+      <nav class="links-row">
+        <a class="navlink" href="https://bscscan.com/token/0x851d720513ff135007de95bd58b28514093beb25" target="_blank">BscScan</a>
+        <a class="navlink" href="https://github.com/tokenSardalla/sardalla" target="_blank">GitHub</a>
+        <a class="navlink" href="https://t.me/tokensardalla" target="_blank">Telegram</a>
+        <a class="navlink" href="docs/Sardalla_Whitepaper_EN.pdf" target="_blank" data-i18n="whitepaperLink">Whitepaper</a>
+      </nav>
 
-    <div class="lang">
-      <button data-lang="en" class="active">EN</button>
-      <button data-lang="es">ES</button>
-      <button data-lang="zh">中文</button>
-    </div>
-  </header>
+      <div class="lang">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="es">ES</button>
+        <button data-lang="zh">中文</button>
+      </div>
+    </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="card">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="card hero-left">
+        <div class="hero-flex">
 
-      <div class="hero-box">
+          <div class="logo-big">
+            <img src="logo_sardalla_500px.webp" alt="Sardalla emblem">
+          </div>
 
-        <div class="logo-big">
-          <img src="assets/logo_sardalla_500px.webp" alt="Sardalla emblem">
-        </div>
+          <div>
+            <h2 data-i18n="tagline">A community-driven token on Binance Smart Chain</h2>
+            <p data-i18n="lead">
+              Sardalla (SAR) is a BEP-20 token focused on transparency, open development and future multichain experimentation.
+            </p>
 
-        <div>
-          <h2 data-i18n="tagline">A community-driven token on Binance Smart Chain</h2>
-          <p data-i18n="lead">
-            Sardalla (SAR) is a BEP-20 token focused on transparency, simplicity and open access through decentralized blockchain technology.
-          </p>
+            <div class="actions">
+              <a class="btn primary" target="_blank"
+                 href="https://pancakeswap.finance/swap?outputCurrency=0x851d720513ff135007de95bd58b28514093beb25&chainId=56"
+                 data-i18n="buy">Buy SAR</a>
 
-          <div class="actions">
-            <a class="btn primary" target="_blank"
-               href="https://pancakeswap.finance/swap?outputCurrency=0x851d720513ff135007de95bd58b28514093beb25&chainId=56"
-               data-i18n="buy">Buy SAR</a>
+              <a class="btn" target="_blank"
+                 href="https://pancakeswap.finance/info/token/0x851D720513Ff135007DE95BD58b28514093BEb25"
+                 data-i18n="liquidity">Liquidity Info</a>
 
-            <a class="btn" target="_blank"
-               href="https://pancakeswap.finance/info/token/0x851D720513Ff135007DE95BD58b28514093BEb25"
-               data-i18n="liquidity">Liquidity Info</a>
-
-            <a class="btn" target="_blank"
-               href="https://bscscan.com/address/0x851d720513ff135007de95bd58b28514093beb25#code"
-               data-i18n="contract">View Contract</a>
+              <button class="btn" id="addMetaMask" data-i18n="addmm">
+                Add to MetaMask
+              </button>
+            </div>
           </div>
 
         </div>
       </div>
 
-    </div>
+      <aside class="card">
+        <h2 data-i18n="quick">Quick Links</h2>
+        <ul>
+          <li><a href="https://pancakeswap.finance/swap?outputCurrency=0x851d720513ff135007de95bd58b28514093beb25&chainId=56" target="_blank" data-i18n="sell">Sell SAR</a></li>
+          <li><a href="https://t.me/tokensardalla" target="_blank">Telegram</a></li>
+          <li><a href="mailto:tokensardalla@hotmail.com">tokensardalla@hotmail.com</a></li>
+        </ul>
+      </aside>
+    </section>
 
-    <aside class="card">
-      <h2 data-i18n="quick">Quick Links</h2>
-      <ul>
-        <li><a href="https://pancakeswap.finance/swap?outputCurrency=0x851d720513ff135007de95bd58b28514093beb25&chainId=56" target="_blank" data-i18n="sell">Sell SAR</a></li>
-        <li><a href="https://t.me/tokensardalla" target="_blank">Telegram</a></li>
-        <li><a href="mailto:tokensardalla@hotmail.com">tokensardalla@hotmail.com</a></li>
-      </ul>
-    </aside>
-  </section>
+    <!-- MAIN CONTENT -->
+    <section class="grid">
 
-  <!-- MAIN CONTENT -->
-  <section class="grid">
+      <article class="card">
+        <h2 data-i18n="aboutTitle">About Sardalla</h2>
+        <p data-i18n="aboutBody">
+          Sardalla (SAR) is a BEP-20 token deployed on Binance Smart Chain.  
+          Its goal is to explore practical use cases such as cross-chain bridges, community governance and user-friendly payments.
+        </p>
 
-    <article class="card">
+        <h3 data-i18n="tokenomicsTitle">Tokenomics</h3>
+        <ul>
+          <li><strong>Total Supply:</strong> 1,000,000,000 SAR</li>
+          <li><strong>Decimals:</strong> 18</li>
+          <li>
+            <strong>Contract:</strong>
+            <a href="https://bscscan.com/token/0x851d720513ff135007de95bd58b28514093beb25" target="_blank">
+              0x851d…eb25
+            </a>
+          </li>
+        </ul>
 
-      <h2 data-i18n="aboutTitle">About Sardalla</h2>
-      <p data-i18n="aboutBody">
-        Sardalla (SAR) is a BEP-20 token deployed on Binance Smart Chain.  
-        Its objective is to provide a transparent, community-led asset with a simple structure and fully verifiable supply.
-      </p>
+        <h3 data-i18n="whitepaperTitle">Whitepaper</h3>
+        <p>
+          <a href="docs/Sardalla_Whitepaper_EN.pdf" target="_blank" data-i18n="whitepaperLink">Read Sardalla Whitepaper</a>
+        </p>
+      </article>
 
-      <h3 data-i18n="tokenomicsTitle">Tokenomics</h3>
-      <ul>
-        <li><strong>Total Supply:</strong> 1,000,000,000 SAR</li>
-        <li><strong>Decimals:</strong> 18</li>
-        <li><strong>Contract:</strong>
-          <a href="https://bscscan.com/token/0x851d720513ff135007de95bd58b28514093beb25" target="_blank">0x851d…eb25</a>
-        </li>
-      </ul>
+      <aside class="card">
+        <h2 data-i18n="teamTitle">Team / About</h2>
+        <p data-i18n="teamBody">
+          Sardalla is a community-driven experiment with transparent development through public repositories.
+          Contact available via Telegram or email.
+        </p>
 
-      <h3 data-i18n="whitepaperTitle">Whitepaper</h3>
-      <p><a href="../docs/Sardalla_Whitepaper_EN.pdf" target="_blank" data-i18n="whitepaperLink">Read Sardalla Whitepaper</a></p>
+        <h3 data-i18n="nextTitle">Next Steps</h3>
+        <p data-i18n="nextBody">
+          Contract verified on BscScan.  
+          Liquidity locked.  
+          Updates published through official channels.
+        </p>
+      </aside>
 
-    </article>
+    </section>
 
-    <aside class="card">
-
-      <h2 data-i18n="teamTitle">Team / About</h2>
-      <p data-i18n="teamBody">
-        Sardalla is a community token with transparent development through public repositories.  
-        Contact available via Telegram or official email.
-      </p>
-
-      <h3 data-i18n="nextTitle">Next Steps</h3>
-      <p data-i18n="nextBody">
-        Contract verified on BscScan.  
-        Liquidity locked and project updates communicated through official channels.
-      </p>
-
-      <h3>Official</h3>
-      <div class="links-row">
-        <a class="navlink" href="https://t.me/tokensardalla">Telegram</a>
-        <a class="navlink" href="https://github.com/tokenSardalla/sardalla">GitHub</a>
-        <a class="navlink" href="mailto:tokensardalla@hotmail.com">Email</a>
+    <footer>
+      <div>© 2025 Sardalla (SAR) — BEP-20 Token.</div>
+      <div>
+        Contact:
+        <a href="mailto:tokensardalla@hotmail.com">tokensardalla@hotmail.com</a>
       </div>
+    </footer>
 
-    </aside>
-  </section>
+  </div>
 
-  <footer>
-    <div>© 2025 Sardalla (SAR) — BEP-20 Token.</div>
-    <div>Contact: <a href="mailto:tokensardalla@hotmail.com">tokensardalla@hotmail.com</a></div>
-  </footer>
-
-</div>
-
-<!-- Language Script -->
-<script src="app.js"></script>
-
+  <script src="app.js"></script>
 </body>
 </html>

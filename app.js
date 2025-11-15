@@ -18,7 +18,14 @@ const dict = {
     teamTitle:"Project Model",
     teamBody:"Sardalla is a community-driven token with transparent development via public repositories. No centralized team.",
     nextTitle:"Next Steps",
-    nextBody:"Contract verified. Liquidity locked. Roadmap published. Experimental utilities under development."
+    nextBody:"Contract verified. Liquidity locked. Roadmap published. Experimental utilities under development.",
+    // dentro de cada idioma (en / es / zh)
+    qrscan: "Scan this QR with your Wallet App",        // en
+    // en: qrscan stays the same
+ 
+    // en
+    copyBtn: "Copy Contract",
+    contractLabel: "Contract:",
   },
 
   es:{
@@ -38,7 +45,12 @@ const dict = {
     teamTitle:"Modelo del proyecto",
     teamBody:"Sardalla es un token comunitario con desarrollo transparente mediante repositorios públicos.",
     nextTitle:"Próximos pasos",
-    nextBody:"Contrato verificado. Liquidez bloqueada. Roadmap publicado. Utilidades experimentales en desarrollo."
+    nextBody:"Contrato verificado. Liquidez bloqueada. Roadmap publicado. Utilidades experimentales en desarrollo.",
+    // es
+    qrscan: "Escanea este QR con tu aplicación de Wallet",
+    copyBtn: "Copiar contrato",
+    contractLabel: "Contrato:",
+
   },
 
   zh:{
@@ -58,7 +70,11 @@ const dict = {
     teamTitle:"项目模式",
     teamBody:"Sardalla 通过公共代码库进行透明开发，无中心化团队。",
     nextTitle:"下一步",
-    nextBody:"合约已验证。流动性已锁定。Roadmap 已发布。实验性功能开发中。"
+    nextBody:"合约已验证。流动性已锁定。Roadmap 已发布。实验性功能开发中。",
+    // zh
+    qrscan: "使用您的钱包应用扫描此二维码",
+    copyBtn: "复制合约地址",
+    contractLabel: "合约：",
   }
 };
 
@@ -81,27 +97,3 @@ document.querySelectorAll(".lang button")
 setLang(localStorage.getItem("sardalla_lang") || "en");
 
 
-/* ADD TO METAMASK */
-async function addTokenToMetaMask(){
-  if(window.ethereum){
-    try{
-      await ethereum.request({
-        method:"wallet_watchAsset",
-        params:{
-          type:"ERC20",
-          options:{
-            address:"0x851D720513Ff135007DE95BD58b28514093BEb25",
-            symbol:"SAR",
-            decimals:18,
-            image:"logo_sardalla_128px.webp"
-          }
-        }
-      });
-    } catch(err){
-      console.error(err);
-      alert("Error adding token");
-    }
-  } else {
-    alert("MetaMask not detected");
-  }
-}

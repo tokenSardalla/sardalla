@@ -151,5 +151,73 @@
 </div>
 
 <script src="app.js"></script>
+
+<!-- QR Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- Modal -->
+<div id="qrModal" class="qr-modal">
+  <div class="qr-modal-content">
+    <div class="qr-close" aria-label="Close">×</div>
+
+    <h3 class="qr-title" data-i18n="qrscan">Scan this QR with your Wallet App</h3>
+
+    <div id="qrcode"></div>
+
+    <div class="qr-address">
+      <span data-i18n="contractLabel">Contract:</span><br>
+      <span id="shortAddr">0x851d…eb25</span>
+    </div>
+
+    <button class="qr-copy-btn" id="copyBtn" data-i18n="copyBtn">Copy Contract</button>
+
+    <div id="copyMsg" style="display:none; font-size:12px; color:green;">
+      ✔ Copied!
+    </div>
+  </div>
+</div>
+
+<!-- JS NUEVO (CORREGIDO) -->
+<script>
+  const contractAddress = "0x851d720513ff135007de95bd58b28514093beb25";
+  const qrModal = document.getElementById("qrModal");
+
+  function addTokenToMetaMask() {
+    qrModal.style.display = "flex";
+  }
+
+  document.querySelector(".qr-close").onclick = () => {
+    qrModal.style.display = "none";
+  };
+
+  window.onclick = (e) => {
+    if (e.target === qrModal) qrModal.style.display = "none";
+  };
+
+  let qrGenerated = false;
+  function generateQR() {
+    if (!qrGenerated) {
+      new QRCode(document.getElementById("qrcode"), {
+        text: `ethereum:${contractAddress}@56`,
+        width: 220,
+        height: 220
+      });
+      qrGenerated = true;
+    }
+  }
+
+  document
+    .querySelector("button[onclick='addTokenToMetaMask()']")
+    .addEventListener("click", generateQR);
+
+  document.getElementById("copyBtn").onclick = () => {
+    navigator.clipboard.writeText(contractAddress);
+    document.getElementById("copyMsg").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("copyMsg").style.display = "none";
+    }, 1200);
+  };
+</script>
+
 </body>
 </html>

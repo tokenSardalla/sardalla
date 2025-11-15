@@ -124,3 +124,118 @@ footer{
   flex-wrap:wrap;
   margin-top:8px;
 }
+
+/* QR MODAL */
+.qr-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.qr-modal-content {
+  position: relative;       /* <–– NECESARIO para que el botón cierre no desaparezca */
+  background: #fff;
+  padding: 28px 24px;
+  border-radius: 18px;
+  max-width: 350px;
+  width: 100%;
+  text-align: center;
+  border: 2px solid #ffdf6a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.qr-close {
+  position: absolute;
+  top: 12px;          /* ajusta si quieres mover el botón un pelín */
+  right: 12px;
+  background: #ffdf6a;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;     /* importante para no añadir altura extra */
+  padding: 0;         /* evita desplazamientos por padding */
+  box-shadow: 0 0 6px rgba(0,0,0,0.25);
+  z-index: 20;
+}
+
+/* micro-ajuste opcional si la X sigue ligeramente alta/baja:
+.qr-close { transform: translateY(0.5px); } */
+
+.qr-title {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+}
+
+#qrcode {
+  margin: 0 auto;
+}
+
+.qr-address {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 5px;
+}
+
+.qr-copy-btn {
+  background: #ffdf6a;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qr-copied {
+  display: none;
+  font-size: 12px;
+  color: green;
+  margin-top: 5px;
+}
+
+/* FORZAR VISIBILIDAD DEL TEXTO Y DIRECCIÓN */
+.qr-modal-content h3,
+.qr-title {
+  color: #000 !important;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.qr-address {
+  color: #000 !important;
+  opacity: 0.9 !important;
+  display: block !important;
+  visibility: visible !important;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* EVITAR CUALQUIER RECORTE */
+.qr-modal-content {
+  overflow: visible !important;
+  padding-top: 55px;  /* espacio suficiente para título */
+}
+

@@ -25,6 +25,6 @@ Sardalla (SAR) 是实验性代币，不保证未来价值。
 不构成投资建议，也不是受监管的金融产品。
 
 联系方式
-网站: https://tokensardalla.github.io/sardalla/
-邮箱: tokensardalla@hotmail.com
+网站: https://tokensardalla.sardalla.com/
+邮箱: sardalla@sardalla.com
 BscScan: https://bscscan.com/token/0x851d720513ff135007de95bd58b28514093beb25

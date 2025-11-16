@@ -25,6 +25,6 @@ Sardalla (SAR) is an experimental token with no guarantee of future value.
 It does not represent investment advice or a regulated financial product.
 
 Contact
-Website: https://tokensardalla.github.io/sardalla/
-Email: tokensardalla@hotmail.com
+Website: https://tokensardalla.sardalla.com/
+Email: sardalla@sardalla.com
 BscScan: https://bscscan.com/token/0x851d720513ff135007de95bd58b28514093beb25

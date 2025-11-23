@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sardalla Wallet (SAR) — Keystore manager</title>
 
-  <!-- Usa tu wallet.css (no modificar) -->
   <link rel="stylesheet" href="wallet.css" />
 
   <style>
@@ -13,31 +12,87 @@
       box-shadow: 0 0 0 3px rgba(255,218,26,0.18), 0 8px 20px rgba(0,0,0,0.2);
       animation: pulse 1.6s infinite;
     }
-    @keyframes pulse { 0% { transform: translateY(0); } 50% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+    @keyframes pulse {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+      100% { transform: translateY(0); }
+    }
     .toast {
-      position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px;
-      background: #0b3b6f; color: #fff; padding: 10px 18px; border-radius: 8px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35); z-index: 2000; display: none;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 20px;
+      background: #0b3b6f;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      z-index: 2000;
+      display: none;
       font-family: inherit;
     }
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(4,12,28,0.6); z-index: 2500; display: none; align-items: center; justify-content: center; }
-    .modal { background: linear-gradient(180deg,#0f2b56,#071733); border-radius: 12px; padding: 18px; width: 420px; max-width: calc(100% - 32px); box-shadow: 0 12px 40px rgba(0,0,0,0.6); color:#fff; }
-    .modal h3 { margin:0 0 8px; font-size:18px; } .modal p { margin:0 0 12px; color:#cfe3ff; font-size:13px; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4,12,28,0.6);
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal {
+      background: linear-gradient(180deg, #0f2b56, #071733);
+      border-radius: 12px;
+      padding: 18px;
+      width: 420px;
+      max-width: calc(100% - 32px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      color: #fff;
+    }
+    .modal h3 { margin: 0 0 8px 0; font-size: 18px; }
+    .modal p { margin: 0 0 12px 0; color: #cfe3ff; font-size: 13px; }
     .modal .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
-    .badge-saved { background:#ffda1a; color:#05203a; padding:2px 8px; font-size:11px; border-radius:999px; margin-left:8px; font-weight:700; }
-    .wallet-list-row { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
-    .wallet-list-info { flex:1; }
-    .wallet-action-btn { min-width:72px; }
+
+    .badge-saved {
+      background: #ffda1a;
+      color: #05203a;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      margin-left: 8px;
+      font-weight:700;
+    }
+
+    /* Overlay saving */
+    #savingOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.55);
+      z-index: 3000;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      backdrop-filter: blur(4px);
+    }
   </style>
 </head>
+
 <body>
 
 <div class="wallet-wrap">
+
   <header class="wallet-header">
     <a class="brand" href="index.html">
       <img src="logo_sardalla_96px.webp" alt="Sardalla Logo" />
-      <div><div class="brand-title">Sardalla <span class="accent">Wallet</span></div><div class="brand-sub">Self-custody — Keystore manager</div></div>
+      <div>
+        <div class="brand-title">Sardalla <span class="accent">Wallet</span></div>
+        <div class="brand-sub">Self-custody — Keystore manager</div>
+      </div>
     </a>
+
     <div class="header-actions">
       <a class="btn secondary" href="index.html">Home</a>
       <a class="btn secondary" href="mailto:sardalla@sardalla.com">Support</a>
@@ -47,38 +102,47 @@
   <div class="wallet-main">
 
     <div class="card card-left">
+
       <h2>Create Wallet</h2>
-      <p class="muted">Generate a new Sardalla self-custody wallet. To save it here you must create a keystore password — the app will store only the encrypted keystore JSON.</p>
+      <p class="muted">Generate a new Sardalla self-custody wallet.  
+      To save it here you must create a keystore password —  
+      the app will store only the encrypted keystore JSON.</p>
 
       <button class="btn primary full" id="createWalletBtn">Create New Wallet</button>
+      <button class="btn outline full" id="cancelCreateBtn" style="display:none; margin-top:8px;">Cancel</button>
 
+      <!-- Mnemonic Block -->
       <div id="mnemonicBox" style="display:none; margin-top:16px;">
+
         <h2>Recovery Phrase (NOT stored)</h2>
         <p style="color:#ffda1a; font-weight:600;">⚠ IMPORTANT — This phrase gives full access to your wallet.</p>
-        <p style="color:#ffaaaa;">You will be asked to create a keystore password to save this wallet. The mnemonic will <strong>not</strong> be stored in the browser.</p>
+        <p style="color:#ffaaaa;">The mnemonic will <b>not</b> be stored in the browser.</p>
 
-        <textarea id="mnemonicDisplay" rows="3" style="width:100%; font-size:16px; padding:8px; display:none;" readonly></textarea>
+        <div id="phraseSection">
+          <textarea id="mnemonicDisplay" rows="3" style="width:100%; font-size:16px; padding:8px; display:none;" readonly></textarea>
 
-        <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-          <button class="btn secondary" id="showMnemonicBtn">Show Phrase</button>
-          <button class="btn outline" id="copyMnemonicBtn" style="display:none;">Copy</button>
-          <button class="btn primary" id="mnemonicOkBtn" style="display:none;">I Saved It</button>
+          <div style="margin-top:8px; display:flex; gap:8px;">
+            <button class="btn secondary" id="showMnemonicBtn">Show Phrase</button>
+            <button class="btn outline" id="copyMnemonicBtn" style="display:none;">Copy</button>
+            <button class="btn primary" id="mnemonicOkBtn" style="display:none;">I Saved It</button>
+          </div>
         </div>
 
         <div style="margin-top:12px;">
-          <label style="font-size:13px;color:var(--muted)">Name this wallet (optional)</label>
-          <input id="walletNameInput" class="p-2" placeholder="My wallet name (e.g. Wallet 1)" style="width:100%; margin-top:6px;" />
+          <label style="font-size:13px;color:var(--muted)">Name this wallet</label>
+          <input id="walletNameInput" placeholder="Wallet name" class="p-2" style="width:100%; margin-top:6px;" />
 
-          <label style="font-size:13px;color:var(--muted); margin-top:10px; display:block;">Choose a password to encrypt the keystore (min 8 chars)</label>
-          <input id="saveKeystorePwd" type="password" class="p-2" placeholder="Strong password" style="width:100%; margin-top:6px;" />
+          <label style="font-size:13px;color:var(--muted); margin-top:10px; display:block;">Password to encrypt keystore</label>
+          <input id="saveKeystorePwd" type="password" placeholder="Min. 8 chars" class="p-2" style="width:100%; margin-top:6px;" />
 
           <div style="display:flex; gap:8px; margin-top:8px;">
             <button class="btn full" id="saveKeystoreBtn" disabled>Encrypt & Save Keystore</button>
             <button class="btn outline full" id="downloadMnemonicBtn">Download Mnemonic (txt)</button>
           </div>
 
-          <div id="saveHint" style="margin-top:10px;color:var(--muted);font-size:13px;display:none;">
-            <strong>Step 4 — Save keystore:</strong> You must click <em>Encrypt & Save Keystore</em> to store this wallet in the browser. If you leave the page without saving, the wallet will be lost.
+          <div id="saveHint" style="margin-top:10px; color:#ccc; font-size:13px; display:none;">
+            <strong>Step 4 — Save keystore:</strong>  
+            If you leave the page without saving, the wallet will be lost.
           </div>
         </div>
       </div>
@@ -88,76 +152,81 @@
         <div class="address-row"><code id="walletAddress">—</code></div>
       </div>
 
-      <div style="margin-top:18px;">
-        <h2>Your Saved Wallets</h2>
-        <div id="walletList" style="margin-top:8px;"></div>
-        <div style="margin-top:10px;"><button class="btn outline" id="clearAllBtn">Clear All (localStorage)</button></div>
-      </div>
+      <h2>Your Saved Wallets</h2>
+      <div id="walletList" style="margin-top:8px;"></div>
+      <button class="btn outline" id="clearAllBtn" style="margin-top:10px;">Clear All</button>
+
     </div>
 
     <div class="card card-right">
+
       <h2>Balances</h2>
       <div class="balances-grid">
-        <div class="balance-item"><div class="balance-label">BNB</div><div class="balance-value" id="bnbBalance">0</div></div>
-        <div class="balance-item"><div class="balance-label">SAR</div><div class="balance-value" id="sarBalance">0</div></div>
+        <div><div class="balance-label">BNB</div><div class="balance-value" id="bnbBalance">0</div></div>
+        <div><div class="balance-label">SAR</div><div class="balance-value" id="sarBalance">0</div></div>
       </div>
 
-      <div class="actions-column" style="margin-top:20px;">
-        <h2>Send SAR</h2>
-        <input id="sendTo" placeholder="Recipient address" class="p-2" style="width:100%;" />
-        <input id="sendAmt" placeholder="Amount" class="p-2" style="width:100%; margin-top:8px;" />
-        <button class="btn primary full" id="sendSarBtn">Send</button>
+      <h2 style="margin-top:20px;">Send SAR</h2>
+      <input id="sendTo" placeholder="Recipient address" class="p-2" style="width:100%;" />
+      <input id="sendAmt" placeholder="Amount" class="p-2" style="width:100%; margin-top:8px;" />
+      <button class="btn primary full" id="sendSarBtn">Send</button>
+
+      <h2 style="margin-top:26px;">Import Wallet</h2>
+
+      <label style="font-size:13px;color:var(--muted)">Import mnemonic (converted to keystore)</label>
+      <textarea id="importMnemonic" rows="2" class="p-2" placeholder="seed phrase"></textarea>
+      <input id="importName" class="p-2" placeholder="Optional name" style="margin-top:8px;" />
+      <input id="importMnemonicPwd" type="password" class="p-2" placeholder="Keystore password" style="margin-top:8px;" />
+      <button class="btn secondary full" id="importMnemonicBtn" style="margin-top:8px;">Import mnemonic → keystore</button>
+
+      <hr style="margin:16px 0; border-color:#1e2c4d;" />
+
+      <textarea id="importJson" rows="3" class="p-2" placeholder="Paste keystore JSON"></textarea>
+      <input id="importJsonName" class="p-2" placeholder="Wallet name" style="margin-top:8px;" />
+      <button class="btn outline full" id="importKeystoreBtn" style="margin-top:8px;">Import Keystore JSON</button>
+
+      <div class="token-info" style="margin-top:20px;">
+        <div class="token-row"><span class="token-label">Token:</span> Sardalla (SAR)</div>
+        <div class="token-row"><span class="token-label">Network:</span> BSC Mainnet</div>
+        <div class="token-row"><span class="token-label">Contract:</span> 0x851d720513fF135007dE95bd58B28514093bEb25</div>
       </div>
 
-      <div class="actions-column" style="margin-top:26px;">
-        <h2>Import Wallet</h2>
-        <label style="font-size:13px;color:var(--muted)">Import mnemonic (paste) — converted to keystore (NOT stored in clear)</label>
-        <textarea id="importMnemonic" rows="2" class="p-2" style="width:100%;" placeholder="seed phrase (12/24 words)"></textarea>
-        <input id="importName" class="p-2" placeholder="Optional wallet name" style="width:100%; margin-top:8px;" />
-        <label style="font-size:13px;color:var(--muted); margin-top:8px; display:block;">Choose encryption password for the created keystore</label>
-        <input id="importMnemonicPwd" type="password" class="p-2" placeholder="Keystore password" style="width:100%; margin-top:6px;" />
-        <div style="display:flex; gap:8px; margin-top:8px;"><button class="btn secondary full" id="importMnemonicBtn">Import mnemonic → create keystore</button></div>
-
-        <hr style="margin:16px 0; border-color:var(--border)" />
-
-        <label style="font-size:13px;color:var(--muted)">Import existing encrypted keystore JSON (will be saved)</label>
-        <textarea id="importJson" rows="3" class="p-2" style="width:100%;" placeholder="Paste keystore JSON"></textarea>
-        <input id="importJsonName" class="p-2" placeholder="Wallet name" style="width:100%; margin-top:8px;" />
-        <button class="btn outline full" id="importKeystoreBtn">Import Keystore JSON</button>
-      </div>
-
-      <div class="token-info" style="margin-top:18px;">
-        <div class="token-row"><span class="token-label">Token:</span><span class="token-address">Sardalla (SAR)</span></div>
-        <div class="token-row"><span class="token-label">Network:</span><span class="token-network">BSC Mainnet</span></div>
-        <div class="token-row"><span class="token-label">Contract:</span><span class="token-address">0x851d720513fF135007dE95bd58B28514093bEb25</span></div>
-      </div>
     </div>
-
   </div>
 
   <div class="status-row" id="walletStatus">Ready.</div>
 
-  <footer class="wallet-footer"><span>© 2025–2027 Sardalla (SAR)</span><a href="mailto:sardalla@sardalla.com">Contact</a><a href="index.html">Website</a></footer>
+  <footer class="wallet-footer">
+    <span>© 2025–2027 Sardalla (SAR)</span>
+    <a href="mailto:sardalla@sardalla.com">Contact</a>
+    <a href="index.html">Website</a>
+  </footer>
+
 </div>
 
 <div id="toast" class="toast"></div>
 
-<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
-  <div class="modal" role="document" aria-modal="true">
+<div id="savingOverlay">Saving wallet…</div>
+
+<!-- Unlock Modal -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal">
     <h3>Unlock Wallet</h3>
-    <p>Enter the keystore password to unlock this wallet. This password is not stored by the app.</p>
-    <input id="unlockPasswordInput" type="password" class="p-2" placeholder="Keystore password" style="width:100%; margin-top:6px;" />
-    <div class="modal-actions" style="margin-top:10px;">
+    <p>Enter password to unlock your keystore.</p>
+    <input id="unlockPasswordInput" type="password" class="p-2" placeholder="Password" style="width:100%;" />
+    <div class="modal-actions">
       <button class="btn" id="unlockCancel">Cancel</button>
       <button class="btn primary" id="unlockConfirm">Unlock Wallet</button>
     </div>
   </div>
 </div>
 
-<!-- QR & ethers -->
+<!-- QR + Ethers + JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
 <script src="wallet.js"></script>
 </body>
 </html>
+
 

@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sardalla Wallet (SAR) — Multiwallet</title>
+  <title>Sardalla Wallet (SAR) — Keystore manager</title>
 
-  <!-- Usa tu wallet.css -->
+  <!-- Usa tu wallet.css (ya comprobado compatible) -->
   <link rel="stylesheet" href="wallet.css" />
 </head>
 
@@ -19,7 +19,7 @@
       <img src="logo_sardalla_96px.webp" alt="Sardalla Logo" />
       <div>
         <div class="brand-title">Sardalla <span class="accent">Wallet</span></div>
-        <div class="brand-sub">Self-custody Web3 Wallet</div>
+        <div class="brand-sub">Self-custody — Keystore manager</div>
       </div>
     </a>
 
@@ -36,15 +36,15 @@
     <div class="card card-left">
 
       <h2>Create Wallet</h2>
-      <p class="muted">Generate a new Sardalla self-custody wallet.</p>
+      <p class="muted">Generate a new Sardalla self-custody wallet. To save it here you must create a keystore password — the app will store only the encrypted keystore JSON.</p>
 
       <button class="btn primary full" id="createWalletBtn">Create New Wallet</button>
 
       <!-- RECOVERY PHRASE -->
       <div id="mnemonicBox" style="display:none; margin-top:16px;">
-        <h2>Recovery Phrase</h2>
+        <h2>Recovery Phrase (NOT stored)</h2>
         <p style="color:#ffda1a; font-weight:600;">⚠ IMPORTANT — This phrase gives full access to your wallet.</p>
-        <p style="color:#ffaaaa;">Never share it. Write it on paper and keep it safe.</p>
+        <p style="color:#ffaaaa;">You will be asked to create a keystore password to save this wallet. The mnemonic will <strong>not</strong> be stored in the browser.</p>
 
         <textarea id="mnemonicDisplay" rows="3" style="width:100%; font-size:16px; padding:8px; display:none;" readonly></textarea>
 
@@ -57,8 +57,12 @@
         <div style="margin-top:12px;">
           <label style="font-size:13px;color:var(--muted)">Name this wallet (optional)</label>
           <input id="walletNameInput" class="p-2" placeholder="My wallet name (e.g. Wallet 1)" style="width:100%; margin-top:6px;" />
+
+          <label style="font-size:13px;color:var(--muted); margin-top:10px; display:block;">Choose a password to encrypt the keystore (min 8 chars)</label>
+          <input id="saveKeystorePwd" type="password" class="p-2" placeholder="Strong password" style="width:100%; margin-top:6px;" />
+
           <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="btn full" id="saveMnemonicBtn">Save to Wallet List</button>
+            <button class="btn full" id="saveKeystoreBtn">Encrypt & Save Keystore</button>
             <button class="btn outline full" id="downloadMnemonicBtn">Download Mnemonic (txt)</button>
           </div>
         </div>
@@ -74,10 +78,10 @@
 
       <!-- Wallets list -->
       <div style="margin-top:18px;">
-        <h2>Your Wallets</h2>
+        <h2>Your Saved Wallets</h2>
         <div id="walletList" style="margin-top:8px;"></div>
         <div style="margin-top:10px;">
-          <button class="btn outline" id="clearAllBtn">Clear All Wallets (localStorage)</button>
+          <button class="btn outline" id="clearAllBtn">Clear All (localStorage)</button>
         </div>
       </div>
 
@@ -110,23 +114,22 @@
       <div class="actions-column" style="margin-top:26px;">
         <h2>Import Wallet</h2>
 
-        <label style="font-size:13px;color:var(--muted)">Import mnemonic (paste)</label>
+        <label style="font-size:13px;color:var(--muted)">Import mnemonic (paste) — converted to keystore (NOT stored in clear)</label>
         <textarea id="importMnemonic" rows="2" class="p-2" style="width:100%;" placeholder="seed phrase (12/24 words)"></textarea>
         <input id="importName" class="p-2" placeholder="Optional wallet name" style="width:100%; margin-top:8px;" />
+        <label style="font-size:13px;color:var(--muted); margin-top:8px; display:block;">Choose encryption password for the created keystore</label>
+        <input id="importMnemonicPwd" type="password" class="p-2" placeholder="Keystore password" style="width:100%; margin-top:6px;" />
         <div style="display:flex; gap:8px; margin-top:8px;">
-          <button class="btn secondary full" id="importMnemonicBtn">Import Mnemonic</button>
+          <button class="btn secondary full" id="importMnemonicBtn">Import mnemonic → create keystore</button>
         </div>
 
         <hr style="margin:16px 0; border-color:var(--border)" />
 
-        <label style="font-size:13px;color:var(--muted)">Or import encrypted keystore JSON</label>
+        <label style="font-size:13px;color:var(--muted)">Import existing encrypted keystore JSON (will be saved)</label>
         <textarea id="importJson" rows="3" class="p-2" style="width:100%;" placeholder="Paste keystore JSON"></textarea>
-        <input id="importPwd" type="password" placeholder="Keystore password" class="p-2" />
-        <button class="btn outline full" id="importKeystore">Import Keystore</button>
+        <input id="importJsonName" class="p-2" placeholder="Wallet name" style="width:100%; margin-top:8px;" />
+        <button class="btn outline full" id="importKeystoreBtn">Import Keystore JSON</button>
 
-        <label style="font-size:13px;color:var(--muted); margin-top:12px">Or import private key</label>
-        <input id="importPk" placeholder="Private key (0x...)" class="p-2" style="width:100%; margin-top:6px;" />
-        <button class="btn outline full" id="importPkBtn">Import Private Key</button>
       </div>
 
       <!-- TOKEN INFO -->
@@ -172,3 +175,4 @@
 
 </body>
 </html>
+

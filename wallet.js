@@ -1,5 +1,5 @@
-/* Sardalla multi-wallet (mnemonic stored in localStorage) */
-/* WARNING: storing mnemonics in localStorage is insecure. Users should export and store them offline. */
+/* Sardalla keystore-manager (opción A: guardamos keystore cifrados) */
+/* Nota: la app nunca guarda mnemonics en claro. Solo guarda keystore JSON cifrados. */
 
 (() => {
   const SAR = "0x851d720513fF135007dE95bd58B28514093bEb25";
@@ -10,7 +10,7 @@
     "function balanceOf(address) view returns (uint256)",
     "function transfer(address to, uint256 amount) returns (bool)"
   ];
-  const STORAGE_KEY = "sardalla_wallets_v1"; // localStorage key
+  const STORAGE_KEY = "sardalla_keystores_v1";
 
   let provider = new ethers.providers.JsonRpcProvider(RPC);
   let activeWallet = null; // ethers.Wallet connected
@@ -25,31 +25,34 @@
     box.classList.toggle("ok", !bad);
   };
 
-  // LocalStorage helpers
-  function loadStoredWallets() {
+  // localStorage helpers
+  function loadKeystores() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      return JSON.parse(raw);
+      return raw ? JSON.parse(raw) : [];
     } catch (e) {
-      console.warn("Failed to parse wallets", e);
+      console.warn("parse error", e);
       return [];
     }
   }
-  function saveStoredWallets(arr) {
+  function saveKeystores(arr) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
   }
 
-  // Render wallet list UI
-  function renderWalletList() {
-    const list = loadStoredWallets();
+  // Utility UI helpers
+  function truncate(addr) { return addr ? addr.slice(0,6) + "…" + addr.slice(-6) : ""; }
+  function createButton(text, cls = "btn") { const b = document.createElement("button"); b.className = cls; b.textContent = text; return b; }
+
+  // Render saved keystores list
+  function renderKeystoreList() {
+    const arr = loadKeystores();
     const el = $("#walletList");
     el.innerHTML = "";
-    if (list.length === 0) {
-      el.innerHTML = "<div class='muted'>No wallets saved yet.</div>";
+    if (arr.length === 0) {
+      el.innerHTML = "<div class='muted'>No saved wallets (keystores).</div>";
       return;
     }
-    list.forEach((w, idx) => {
+    arr.forEach((item, idx) => {
       const row = document.createElement("div");
       row.style.display = "flex";
       row.style.alignItems = "center";
@@ -58,33 +61,31 @@
 
       const info = document.createElement("div");
       info.style.flex = "1";
-      info.innerHTML = `<div style="font-weight:700">${escapeHtml(w.name || `Wallet ${idx+1}`)}</div>
-                        <div class="muted" style="font-size:12px">${truncate(w.address)}</div>`;
+      info.innerHTML = `<div style="font-weight:700">${escapeHtml(item.name || ('Wallet ' + (idx+1)))}</div>
+                        <div class="muted" style="font-size:12px">${truncate(item.address)}</div>`;
 
       const actions = document.createElement("div");
       actions.style.display = "flex";
       actions.style.gap = "6px";
 
-      const loadBtn = document.createElement("button");
-      loadBtn.className = "btn outline";
-      loadBtn.textContent = "Load";
-      loadBtn.onclick = () => loadWalletFromStorage(idx);
+      const loadBtn = createButton("Load", "btn outline");
+      loadBtn.onclick = () => promptPasswordAndLoad(idx);
 
-      const exportBtn = document.createElement("button");
-      exportBtn.className = "btn secondary";
-      exportBtn.textContent = "Export";
-      exportBtn.onclick = () => exportMnemonic(idx);
+      const downloadBtn = createButton("Download", "btn secondary");
+      downloadBtn.onclick = () => downloadKeystore(item);
 
-      const delBtn = document.createElement("button");
-      delBtn.className = "btn";
-      delBtn.textContent = "Delete";
+      const delBtn = createButton("Delete", "btn");
       delBtn.onclick = () => {
-        if (!confirm("Delete this wallet from this browser? This action cannot be undone.")) return;
-        deleteWallet(idx);
+        if (!confirm("Delete this stored keystore from the browser?")) return;
+        const a = loadKeystores();
+        a.splice(idx,1);
+        saveKeystores(a);
+        renderKeystoreList();
+        setStatus("Keystore deleted.");
       };
 
       actions.appendChild(loadBtn);
-      actions.appendChild(exportBtn);
+      actions.appendChild(downloadBtn);
       actions.appendChild(delBtn);
 
       row.appendChild(info);
@@ -93,40 +94,69 @@
     });
   }
 
-  // Utility functions
-  function truncate(addr) {
-    if (!addr) return "";
-    return addr.slice(0,6) + "…" + addr.slice(-6);
-  }
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
-  // Create wallet flow
+  // Download keystore JSON (for export)
+  function downloadKeystore(item) {
+    const blob = new Blob([item.keystore], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sardalla_keystore_${item.address}.json`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    setStatus("Keystore downloaded.");
+  }
+
+  // Prompt for password and load keystore into memory (activeWallet)
+  async function promptPasswordAndLoad(idx) {
+    const list = loadKeystores();
+    const item = list[idx];
+    if (!item) return setStatus("Keystore not found", true);
+    const pwd = prompt("Enter keystore password to unlock wallet (this prompt won't save the password):");
+    if (pwd === null) return; // cancelled
+    setStatus("Decrypting keystore...");
+    try {
+      const w = await ethers.Wallet.fromEncryptedJson(item.keystore, pwd);
+      activeWallet = w.connect(provider);
+      $("#walletAddress").textContent = activeWallet.address;
+      // show QR
+      $("#qrBlock") && ($("#qrBlock").style.display = "block");
+      const qnode = document.getElementById("qrcode");
+      if (qnode) { qnode.innerHTML = ""; new QRCode(qnode, activeWallet.address); }
+      setStatus("Wallet unlocked in memory.");
+      await refreshBalances();
+    } catch (e) {
+      console.error(e);
+      setStatus("Wrong password or invalid keystore", true);
+    }
+  }
+
+  // Create new wallet (in-memory) and show mnemonic (not stored)
   $("#createWalletBtn").onclick = async () => {
     try {
       const w = ethers.Wallet.createRandom();
       activeWallet = w.connect(provider);
-      setStatus("Wallet generated. Please save the recovery phrase NOW.");
-      // show mnemonic UI
+      setStatus("Wallet generated. Save the keystore to store it.");
+      // show mnemonic section
       $("#mnemonicBox").style.display = "block";
       $("#mnemonicDisplay").value = w.mnemonic.phrase;
       $("#mnemonicDisplay").style.display = "none";
       $("#copyMnemonicBtn").style.display = "none";
       $("#mnemonicOkBtn").style.display = "none";
       $("#showMnemonicBtn").style.display = "inline-block";
-      // show address and QR
+
       $("#walletAddress").textContent = activeWallet.address;
-      $("#qrBlock").style.display = "block";
-      // render QR (replace previous)
+      // QR
+      $("#qrBlock") && ($("#qrBlock").style.display = "block");
       const qnode = document.getElementById("qrcode");
-      qnode.innerHTML = "";
-      new QRCode(qnode, activeWallet.address);
-      // refresh balances (initial)
+      if (qnode) { qnode.innerHTML = ""; new QRCode(qnode, activeWallet.address); }
       await refreshBalances();
     } catch (e) {
       console.error(e);
-      setStatus("Error creating wallet", true);
+      setStatus("Error generating wallet", true);
     }
   };
 
@@ -139,32 +169,38 @@
   };
   $("#copyMnemonicBtn").onclick = () => {
     navigator.clipboard.writeText($("#mnemonicDisplay").value);
-    setStatus("Mnemonic copied to clipboard. Keep it safe.");
+    setStatus("Mnemonic copied to clipboard. Store it safely offline.");
   };
   $("#mnemonicOkBtn").onclick = () => {
     $("#mnemonicBox").style.display = "none";
-    setStatus("Mnemonic confirmed. You can save it to the wallet list or download it.");
+    setStatus("Mnemonic acknowledged. Encrypt to save or download it.");
   };
 
-  // Save mnemonic to localStorage (user chose B: plaintext mnemonic)
-  $("#saveMnemonicBtn").onclick = () => {
-    if (!activeWallet || !activeWallet.mnemonic) return setStatus("No wallet to save", true);
-    const name = $("#walletNameInput").value.trim() || `Wallet ${Date.now()}`;
-    const entry = {
-      id: Date.now(),
-      name,
-      mnemonic: activeWallet.mnemonic.phrase,
-      address: activeWallet.address,
-      createdAt: new Date().toISOString()
-    };
-    const arr = loadStoredWallets();
-    arr.push(entry);
-    saveStoredWallets(arr);
-    renderWalletList();
-    setStatus("Wallet saved locally (mnemonic stored in browser).");
+  // Save keystore: encrypt current activeWallet with provided password and store
+  $("#saveKeystoreBtn").onclick = async () => {
+    if (!activeWallet || !activeWallet.mnemonic) return setStatus("No wallet generated to save", true);
+    const pwd = $("#saveKeystorePwd").value;
+    if (!pwd || pwd.length < 8) return setStatus("Choose a password ≥ 8 characters", true);
+    const name = $("#walletNameInput").value.trim() || (`Wallet ${Date.now()}`);
+    setStatus("Encrypting keystore (this may take a few seconds)...");
+    try {
+      const encrypted = await activeWallet.encrypt(pwd);
+      const entry = { id: Date.now(), name, address: activeWallet.address, keystore: encrypted, createdAt: new Date().toISOString() };
+      const arr = loadKeystores();
+      arr.push(entry);
+      saveKeystores(arr);
+      renderKeystoreList();
+      setStatus("Keystore encrypted & saved locally.");
+      // clear password field
+      $("#saveKeystorePwd").value = "";
+      $("#walletNameInput").value = "";
+    } catch (e) {
+      console.error(e);
+      setStatus("Encryption failed", true);
+    }
   };
 
-  // Download mnemonic as .txt
+  // Download mnemonic as .txt (user may want to save seed offline)
   $("#downloadMnemonicBtn").onclick = () => {
     if (!activeWallet || !activeWallet.mnemonic) return setStatus("No mnemonic available", true);
     const txt = activeWallet.mnemonic.phrase;
@@ -178,124 +214,69 @@
     setStatus("Mnemonic downloaded. Store it offline.");
   };
 
-  // Import mnemonic pasted by user
-  $("#importMnemonicBtn").onclick = () => {
+  // Import mnemonic: convert to keystore by asking for a password, then save
+  $("#importMnemonicBtn").onclick = async () => {
     try {
       const m = $("#importMnemonic").value.trim();
       if (!m || m.split(" ").length < 12) return setStatus("Invalid mnemonic", true);
-      const w = ethers.Wallet.fromMnemonic(m).connect(provider);
-      // Save to storage immediately (because user chose B)
+      const pwd = $("#importMnemonicPwd").value;
+      if (!pwd || pwd.length < 8) return setStatus("Choose a password ≥ 8 characters", true);
       const name = $("#importName").value.trim() || `Imported ${Date.now()}`;
-      const entry = {
-        id: Date.now(),
-        name,
-        mnemonic: m,
-        address: w.address,
-        createdAt: new Date().toISOString()
-      };
-      const arr = loadStoredWallets();
+      const w = ethers.Wallet.fromMnemonic(m);
+      setStatus("Encrypting keystore from mnemonic...");
+      const enc = await w.encrypt(pwd);
+      const entry = { id: Date.now(), name, address: w.address, keystore: enc, createdAt: new Date().toISOString() };
+      const arr = loadKeystores();
       arr.push(entry);
-      saveStoredWallets(arr);
-      renderWalletList();
-      setStatus("Mnemonic imported and saved locally.");
+      saveKeystores(arr);
+      renderKeystoreList();
+      setStatus("Imported mnemonic converted to keystore and saved.");
+      // clear inputs
+      $("#importMnemonic").value = "";
+      $("#importMnemonicPwd").value = "";
+      $("#importName").value = "";
     } catch (e) {
       console.error(e);
-      setStatus("Failed to import mnemonic", true);
+      setStatus("Import failed", true);
     }
   };
 
-  // load wallet from stored list index
-  async function loadWalletFromStorage(idx) {
-    const arr = loadStoredWallets();
-    const item = arr[idx];
-    if (!item) return setStatus("Wallet not found", true);
-    try {
-      const w = ethers.Wallet.fromMnemonic(item.mnemonic).connect(provider);
-      activeWallet = w;
-      $("#walletAddress").textContent = w.address;
-      // show QR
-      $("#qrBlock").style.display = "block";
-      const qnode = document.getElementById("qrcode");
-      qnode.innerHTML = "";
-      new QRCode(qnode, w.address);
-      // set mnemonic in display (hidden by default)
-      $("#mnemonicDisplay").value = item.mnemonic;
-      $("#mnemonicDisplay").style.display = "none";
-      $("#copyMnemonicBtn").style.display = "none";
-      $("#mnemonicOkBtn").style.display = "none";
-      $("#showMnemonicBtn").style.display = "inline-block";
-      setStatus(`Wallet loaded: ${item.name}`);
-      await refreshBalances();
-    } catch (e) {
-      console.error(e);
-      setStatus("Failed to load wallet", true);
-    }
-  }
-
-  // Export mnemonic (copy to clipboard and also show prompt)
-  function exportMnemonic(idx) {
-    const arr = loadStoredWallets();
-    const item = arr[idx];
-    if (!item) return setStatus("Wallet not found", true);
-    navigator.clipboard.writeText(item.mnemonic);
-    setStatus("Mnemonic copied to clipboard. Consider downloading or exporting securely.");
-  }
-
-  // Delete wallet from storage
-  function deleteWallet(idx) {
-    const arr = loadStoredWallets();
-    if (!arr[idx]) return;
-    arr.splice(idx,1);
-    saveStoredWallets(arr);
-    renderWalletList();
-    setStatus("Wallet deleted from this browser.");
-  }
-
-  // Clear all wallets (dangerous)
-  $("#clearAllBtn").onclick = () => {
-    if (!confirm("Delete ALL saved wallets from this browser? This cannot be undone.")) return;
-    localStorage.removeItem(STORAGE_KEY);
-    renderWalletList();
-    setStatus("All wallets cleared.");
-  };
-
-  // Import keystore JSON (optional)
-  $("#importKeystore").onclick = async () => {
+  // Import existing keystore JSON (user pastes encrypted JSON) — saved directly, ask for a name
+  $("#importKeystoreBtn").onclick = () => {
     try {
       const json = $("#importJson").value.trim();
-      const pwd = $("#importPwd").value;
-      if (!json || !pwd) return setStatus("Provide keystore JSON and password", true);
-      const w = await ethers.Wallet.fromEncryptedJson(json, pwd);
-      activeWallet = w.connect(provider);
-      $("#walletAddress").textContent = activeWallet.address;
-      setStatus("Keystore imported (loaded in memory).");
-      // don't auto-save keystore here because user wanted option B (mnemonic), but we could store the mnemonic if we had it.
-      await refreshBalances();
+      if (!json) return setStatus("Paste keystore JSON", true);
+      // Validate basic JSON - we won't decrypt here
+      let parsed;
+      try { parsed = JSON.parse(json); } catch (e) { return setStatus("Invalid JSON", true); }
+      const name = $("#importJsonName").value.trim() || `Imported ${Date.now()}`;
+      // Derive address from keystore? If the keystore contains "address" field use it, otherwise keep empty
+      const address = parsed.address ? (parsed.address.startsWith("0x") ? parsed.address : "0x" + parsed.address) : "";
+      const entry = { id: Date.now(), name, address, keystore: json, createdAt: new Date().toISOString() };
+      const arr = loadKeystores();
+      arr.push(entry);
+      saveKeystores(arr);
+      renderKeystoreList();
+      setStatus("Keystore JSON saved locally.");
+      $("#importJson").value = "";
+      $("#importJsonName").value = "";
     } catch (e) {
       console.error(e);
       setStatus("Failed to import keystore", true);
     }
   };
 
-  // Import private key
-  $("#importPkBtn").onclick = () => {
-    try {
-      const pk = $("#importPk").value.trim();
-      if (!pk) return setStatus("Enter private key", true);
-      const w = new ethers.Wallet(pk, provider);
-      activeWallet = w;
-      $("#walletAddress").textContent = w.address;
-      setStatus("Private key imported (loaded).");
-      refreshBalances();
-    } catch (e) {
-      console.error(e);
-      setStatus("Invalid private key", true);
-    }
+  // Clear all stored keystores
+  $("#clearAllBtn").onclick = () => {
+    if (!confirm("Delete ALL stored keystores from this browser? This cannot be undone.")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    renderKeystoreList();
+    setStatus("All keystores cleared.");
   };
 
-  // Refresh balances
+  // Refresh balances for activeWallet
   async function refreshBalances() {
-    if (!activeWallet) return;
+    if (!activeWallet) { $("#bnbBalance").textContent = "0"; $("#sarBalance").textContent = "0"; return; }
     try {
       const b = await provider.getBalance(activeWallet.address);
       $("#bnbBalance").textContent = ethers.utils.formatEther(b);
@@ -312,9 +293,9 @@
     }
   }
 
-  // Send SAR (uses activeWallet as signer)
+  // Send SAR using activeWallet (must be unlocked by loading keystore earlier)
   $("#sendSarBtn").onclick = async () => {
-    if (!activeWallet) return setStatus("Load a wallet first", true);
+    if (!activeWallet) return setStatus("Load/unlock a wallet first", true);
     try {
       const to = $("#sendTo").value.trim();
       const amt = $("#sendAmt").value.trim();
@@ -334,8 +315,9 @@
     }
   };
 
-  // On load
-  renderWalletList();
-  setStatus("Ready — create or import wallets. (mnemonics stored locally)");
+  // On start
+  renderKeystoreList();
+  setStatus("Ready — keystore-only storage. Mnemonics are NOT stored in the browser.");
 
 })();
+

@@ -5,98 +5,160 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sardalla Wallet (SAR)</title>
 
-  <!-- Usa el mismo CSS de tu web -->
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Wallet CSS -->
+  <link rel="stylesheet" href="wallet.css" />
 </head>
 
 <body>
-<div class="wrap">
 
-<header>
-  <div class="brand">
-    <img src="logo_sardalla_96px.webp" alt="Sardalla Logo" />
-    <h1>Sardalla <span class="accent">Wallet</span></h1>
+<div class="wallet-wrap">
+
+  <!-- HEADER -->
+  <header class="wallet-header">
+    <a class="brand" href="index.html">
+      <img src="logo_sardalla_96px.webp" alt="Sardalla Logo" />
+      <div>
+        <div class="brand-title">Sardalla <span class="accent">Wallet</span></div>
+        <div class="brand-sub">Self-custody Web3 Wallet</div>
+      </div>
+    </a>
+
+    <div class="header-actions">
+      <a class="btn secondary" href="index.html">Home</a>
+      <a class="btn secondary" href="mailto:sardalla@sardalla.com">Support</a>
+    </div>
+  </header>
+
+
+  <!-- MAIN CONTENT -->
+  <div class="wallet-main">
+
+    <!-- LEFT PANEL -->
+    <div class="card card-left">
+
+      <h2>Create Wallet</h2>
+      <p class="muted">Generate a new Sardalla self-custody wallet.</p>
+
+      <button class="btn primary full" id="createWalletBtn">Create New Wallet</button>
+
+      <!-- RECOVERY PHRASE -->
+      <div id="mnemonicBox" style="display:none; margin-top:16px;">
+        <h2>Recovery Phrase</h2>
+        <p style="color:#ffda1a; font-weight:600;">⚠ IMPORTANT — This phrase gives full access to your wallet.</p>
+        <p style="color:#ffaaaa;">Never share it. Write it on paper and keep it safe.</p>
+
+        <textarea id="mnemonicDisplay" 
+                  rows="3" 
+                  style="width:100%; font-size:16px; padding:8px; display:none;"
+                  readonly></textarea>
+
+        <button class="btn secondary" id="showMnemonicBtn">Show Phrase</button>
+        <button class="btn outline" id="copyMnemonicBtn" style="display:none;">Copy</button>
+        <button class="btn primary" id="mnemonicOkBtn" style="display:none; margin-top:8px;">I Saved It</button>
+      </div>
+
+      <!-- ADDRESS -->
+      <div class="address-block" style="margin-top:20px;">
+        <div class="address-label">Your Address:</div>
+        <div class="address-row">
+          <code id="walletAddress">—</code>
+        </div>
+      </div>
+
+      <!-- QR -->
+      <div class="qr-wrapper" style="display:none;" id="qrBlock">
+        <div class="qr-label">QR Code</div>
+        <div class="qr-box" id="qrcode"></div>
+      </div>
+
+      <!-- DOWNLOAD KEYSTORE -->
+      <div class="actions-column" style="margin-top:18px;">
+        <h2>Backup Keystore</h2>
+        <input id="pwdEnc" type="password" placeholder="Keystore password" class="p-2" style="width:100%;" />
+        <button class="btn secondary full" id="downloadKeystore">Download Keystore</button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="card card-right">
+
+      <h2>Balances</h2>
+      <div class="balances-grid">
+        <div class="balance-item">
+          <div class="balance-label">BNB</div>
+          <div class="balance-value" id="bnbBalance">0</div>
+        </div>
+        <div class="balance-item">
+          <div class="balance-label">SAR</div>
+          <div class="balance-value" id="sarBalance">0</div>
+        </div>
+      </div>
+
+
+      <!-- SEND -->
+      <div class="actions-column" style="margin-top:20px;">
+        <h2>Send SAR</h2>
+        <input id="sendTo" placeholder="Recipient address" class="p-2" style="width:100%;" />
+        <input id="sendAmt" placeholder="Amount" class="p-2" style="width:100%; margin-top:8px;" />
+        <button class="btn primary full" id="sendSarBtn">Send</button>
+      </div>
+
+
+      <!-- IMPORT -->
+      <div class="actions-column" style="margin-top:26px;">
+        <h2>Import Wallet</h2>
+
+        <textarea id="importJson" rows="3" class="p-2" style="width:100%;"
+                  placeholder="Paste keystore JSON"></textarea>
+        <input id="importPwd" type="password" placeholder="Keystore password" class="p-2" />
+
+        <button class="btn secondary full" id="importKeystore">Import Keystore</button>
+
+        <input id="importPk" placeholder="Private key (0x...)" class="p-2" style="width:100%; margin-top:12px;" />
+        <button class="btn outline full" id="importPkBtn">Import Private Key</button>
+      </div>
+
+
+      <!-- TOKEN INFO -->
+      <div class="token-info">
+        <div class="token-row">
+          <span class="token-label">Token:</span>
+          <span class="token-address">Sardalla (SAR)</span>
+        </div>
+        <div class="token-row">
+          <span class="token-label">Network:</span>
+          <span class="token-network">BSC Mainnet</span>
+        </div>
+        <div class="token-row">
+          <span class="token-label">Contract:</span>
+          <span class="token-address">0x851d720513fF135007dE95bd58B28514093bEb25</span>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <nav class="links-row">
-    <a class="navlink" href="index.html">Home</a>
-    <a class="navlink" href="mailto:sardalla@sardalla.com">Support</a>
-  </nav>
-</header>
+  <!-- STATUS -->
+  <div class="status-row" id="walletStatus">Ready.</div>
 
-<!-- =============== NEW MNEMONIC UI ================= -->
-<section class="card" id="mnemonicBox" style="display:none; margin-top:20px;">
-  <h2>Recovery Phrase</h2>
-
-  <p style="color:#ffda1a; font-weight:600;">
-    ⚠ IMPORTANT — This phrase gives full access to your wallet.
-  </p>
-
-  <p style="color:#ffaaaa;">
-    Never share it. Never screenshot it. Write it on paper and store it safely.
-  </p>
-
-  <textarea id="mnemonicDisplay" 
-            rows="3" 
-            style="width:100%; font-size:16px; padding:8px; display:none;"
-            readonly></textarea>
-
-  <button class="btn" id="showMnemonicBtn">Show Phrase</button>
-  <button class="btn" id="copyMnemonicBtn" style="display:none;">Copy</button>
-  <button class="btn primary" id="mnemonicOkBtn" style="display:none;">I Saved It</button>
-</section>
-<!-- ================================================== -->
-
-<section class="card">
-  <h2>Create Wallet</h2>
-  <button class="btn primary" id="createWalletBtn">Create New Wallet</button>
-
-  <p>Your Address:</p>
-  <div id="walletAddress" style="word-break: break-all;"></div>
-</section>
-
-<section class="card">
-  <h2>Download Encrypted Keystore</h2>
-  <input id="pwdEnc" type="password" placeholder="Keystore password" class="p-2" />
-  <button class="btn" id="downloadKeystore">Download</button>
-</section>
-
-<section class="card">
-  <h2>Import Wallet</h2>
-
-  <h3>From Keystore JSON</h3>
-  <textarea id="importJson" rows="3" class="p-2" style="width:100%;"></textarea>
-  <input id="importPwd" type="password" placeholder="Keystore password" class="p-2" />
-  <button class="btn" id="importKeystore">Import</button>
-
-  <h3>From Private Key</h3>
-  <input id="importPk" placeholder="0x..." class="p-2" style="width:100%;" />
-  <button class="btn" id="importPkBtn">Import Private Key</button>
-</section>
-
-<section class="card">
-  <h2>Balances</h2>
-  <p>BNB: <span id="bnbBalance">0</span></p>
-  <p>SAR: <span id="sarBalance">0</span></p>
-</section>
-
-<section class="card">
-  <h2>Send SAR</h2>
-  <input id="sendTo" placeholder="Recipient address" class="p-2" style="width:100%;" />
-  <input id="sendAmt" placeholder="Amount" class="p-2" style="width:100%;margin-top:8px;" />
-  <button class="btn primary" id="sendSarBtn">Send</button>
-</section>
-
-<footer>
-  <div>© 2025–2027 Sardalla (SAR)</div>
-</footer>
+  <!-- FOOTER -->
+  <footer class="wallet-footer">
+    <span>© 2025–2027 Sardalla (SAR)</span>
+    <a href="mailto:sardalla@sardalla.com">Contact</a>
+    <a href="index.html">Website</a>
+  </footer>
 
 </div>
+
+<!-- QR Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <!-- Ethers.js -->
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
-<!-- Your wallet logic -->
+<!-- Wallet Logic -->
 <script src="wallet.js"></script>
 
 </body>

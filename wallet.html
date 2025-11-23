@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/webp" href="logo_sardalla_96px.webp" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sardalla Wallet — Official SAR Web Wallet</title>
+
+  <style>
+    :root{
+      --bg:#002d6b;
+      --panel:#013a80;
+      --accent:#ffda1a;
+      --muted:#c9d6ff;
+      --border:rgba(255,255,255,0.12);
+      font-family: Inter, ui-sans-serif, system-ui, Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:#fff}
+
+    .wrap{max-width:800px;margin:28px auto;padding:20px}
+
+    header{text-align:center;margin-bottom:20px}
+    header img{width:72px;height:72px;border-radius:50%;box-shadow:0 0 14px rgba(255,218,26,.45)}
+
+    h1{margin:12px 0 0 0;font-size:26px}
+    h2{margin-top:0}
+
+    .card{
+      background:rgba(255,255,255,0.06);
+      border:1px solid var(--border);
+      padding:18px;
+      border-radius:12px;
+      margin-bottom:20px;
+    }
+
+    .btn{
+      display:inline-block;
+      padding:10px 14px;
+      background:var(--accent);
+      color:#111;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:600;
+      border:none;
+      cursor:pointer;
+      margin-right:8px;
+    }
+
+    input{
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:#001f4e;
+      color:#fff;
+      margin-top:6px;
+    }
+
+    footer{
+      margin-top:28px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      border-top:1px solid var(--border);
+      padding-top:18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <header>
+      <img src="logo_sardalla_128px.webp" alt="Sardalla Logo">
+      <h1>Sardalla Wallet <span style="color:var(--accent)">(SAR)</span></h1>
+    </header>
+
+    <!-- CONNECT WALLET -->
+    <div class="card">
+      <h2>Connect Wallet</h2>
+      <button class="btn" onclick="connectWallet()">Connect MetaMask</button>
+      <p id="walletAddress" style="margin-top:10px;color:var(--muted)"></p>
+    </div>
+
+    <!-- BALANCE -->
+    <div class="card">
+      <h2>Your Balance</h2>
+      <p>SAR: <span id="sarBalance">-</span></p>
+      <p>BNB: <span id="bnbBalance">-</span></p>
+
+      <button class="btn" onclick="addToken()">Add SAR to MetaMask</button>
+    </div>
+
+    <!-- SEND TOKENS -->
+    <div class="card">
+      <h2>Send SAR</h2>
+      <label>Recipient Address</label>
+      <input id="recipient" placeholder="0x...">
+
+      <label style="margin-top:12px;">Amount (SAR)</label>
+      <input id="amount" placeholder="0">
+
+      <button class="btn" style="margin-top:12px;" onclick="sendSar()">Send</button>
+
+      <p id="txStatus" style="margin-top:10px;color:var(--accent)"></p>
+    </div>
+
+    <footer>
+      <div>© 2025 Sardalla (SAR) — Official Community Token</div>
+      <div>Contact: <a href="mailto:sardalla@sardalla.com" style="color:var(--accent)">sardalla@sardalla.com</a></div>
+    </footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+  <script>
+    const sarAddress = "0x851D720513Ff135007DE95BD58b28514093BEb25";
+    const sarAbi = [
+      "function balanceOf(address) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function transfer(address,uint256) returns (bool)"
+    ];
+
+    let provider, signer, sar;
+
+    async function connectWallet(){
+      if(window.ethereum){
+        await ethereum.request({ method:"eth_requestAccounts" });
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        sar = new ethers.Contract(sarAddress, sarAbi, signer);
+
+        const addr = await signer.getAddress();
+        document.getElementById("walletAddress").textContent = "Connected: " + addr;
+
+        loadBalances();
+      } else {
+        alert("MetaMask not found.");
+      }
+    }
+
+    async function loadBalances(){
+      const addr = await signer.getAddress();
+
+      const sarBal = await sar.balanceOf(addr);
+      const decimals = await sar.decimals();
+      const sarFixed = ethers.utils.formatUnits(sarBal, decimals);
+      document.getElementById("sarBalance").textContent = sarFixed;
+
+      const bnbBal = await provider.getBalance(addr);
+      const bnbFixed = ethers.utils.formatEther(bnbBal);
+      document.getElementById("bnbBalance").textContent = bnbFixed;
+    }
+
+    async function addToken(){
+      try{
+        await ethereum.request({
+          method:"wallet_watchAsset",
+          params:{
+            type:"ERC20",
+            options:{
+              address:sarAddress,
+              symbol:"SAR",
+              decimals:18,
+              image:"https://tokensardalla.github.io/sardalla/logo_sardalla_128px.webp"
+            }
+          }
+        });
+      }catch(e){
+        alert("Unable to add token.");
+      }
+    }
+
+    async function sendSar(){
+      const to = document.getElementById("recipient").value;
+      const amount = document.getElementById("amount").value;
+      if(!to || !amount){ alert("Missing fields."); return; }
+
+      const decimals = await sar.decimals();
+      const value = ethers.utils.parseUnits(amount, decimals);
+
+      try{
+        const tx = await sar.transfer(to, value);
+        document.getElementById("txStatus").textContent = "Tx sent: " + tx.hash;
+        await tx.wait();
+        document.getElementById("txStatus").textContent = "Success!";
+        loadBalances();
+      }catch(e){
+        document.getElementById("txStatus").textContent = "Error: " + e.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
+

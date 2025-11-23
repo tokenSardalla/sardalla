@@ -1,12 +1,14 @@
-<!-- Sardalla Wallet (Version A - HTML + JS) -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sardalla Wallet (SAR)</title>
+
+  <!-- Usa el mismo CSS de tu web -->
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
 <div class="wrap">
 
@@ -15,28 +17,53 @@
     <img src="logo_sardalla_96px.webp" alt="Sardalla Logo" />
     <h1>Sardalla <span class="accent">Wallet</span></h1>
   </div>
+
   <nav class="links-row">
     <a class="navlink" href="index.html">Home</a>
     <a class="navlink" href="mailto:sardalla@sardalla.com">Support</a>
   </nav>
 </header>
 
+<!-- =============== NEW MNEMONIC UI ================= -->
+<section class="card" id="mnemonicBox" style="display:none; margin-top:20px;">
+  <h2>Recovery Phrase</h2>
+
+  <p style="color:#ffda1a; font-weight:600;">
+    ⚠ IMPORTANT — This phrase gives full access to your wallet.
+  </p>
+
+  <p style="color:#ffaaaa;">
+    Never share it. Never screenshot it. Write it on paper and store it safely.
+  </p>
+
+  <textarea id="mnemonicDisplay" 
+            rows="3" 
+            style="width:100%; font-size:16px; padding:8px; display:none;"
+            readonly></textarea>
+
+  <button class="btn" id="showMnemonicBtn">Show Phrase</button>
+  <button class="btn" id="copyMnemonicBtn" style="display:none;">Copy</button>
+  <button class="btn primary" id="mnemonicOkBtn" style="display:none;">I Saved It</button>
+</section>
+<!-- ================================================== -->
+
 <section class="card">
   <h2>Create Wallet</h2>
   <button class="btn primary" id="createWalletBtn">Create New Wallet</button>
+
   <p>Your Address:</p>
-  <div id="walletAddress" class="p-2" style="word-break:break-all;"></div>
+  <div id="walletAddress" style="word-break: break-all;"></div>
+</section>
 
-  <h3>Mnemonic (write it down!)</h3>
-  <textarea id="mnemonic" rows="3" class="p-2" style="width:100%;"></textarea>
-
-  <h3>Download Encrypted Keystore</h3>
+<section class="card">
+  <h2>Download Encrypted Keystore</h2>
   <input id="pwdEnc" type="password" placeholder="Keystore password" class="p-2" />
   <button class="btn" id="downloadKeystore">Download</button>
 </section>
 
 <section class="card">
   <h2>Import Wallet</h2>
+
   <h3>From Keystore JSON</h3>
   <textarea id="importJson" rows="3" class="p-2" style="width:100%;"></textarea>
   <input id="importPwd" type="password" placeholder="Keystore password" class="p-2" />
@@ -65,7 +92,12 @@
 </footer>
 
 </div>
+
+<!-- Ethers.js -->
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+<!-- Your wallet logic -->
 <script src="wallet.js"></script>
+
 </body>
 </html>

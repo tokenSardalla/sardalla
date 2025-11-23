@@ -132,12 +132,26 @@
     $("#mnemonicDisplay").style.display = "block"; $("#copyMnemonicBtn").style.display = "inline-block"; $("#mnemonicOkBtn").style.display = "inline-block"; $("#showMnemonicBtn").style.display = "none";
   };
   $("#copyMnemonicBtn").onclick = () => { navigator.clipboard.writeText($("#mnemonicDisplay").value); setStatus("Mnemonic copied to clipboard. Store it safely offline."); };
-  $("#mnemonicOkBtn").onclick = () => {
-    mnemonicConfirmed = true; $("#mnemonicBox").style.display = "block"; $("#saveHint").style.display = "block";
-    const saveBtn = $("#saveKeystoreBtn"); saveBtn.disabled = false; saveBtn.classList.add("highlight");
-    setStatus("Mnemonic confirmed. Now encrypt & save the keystore (required)."); showToast("Step 4: Encrypt & Save Keystore (required)");
-  };
+ $("#mnemonicOkBtn").onclick = () => {
+    mnemonicConfirmed = true;
 
+    // Hide the phrase and phrase buttons
+    $("#mnemonicDisplay").style.display = "none";
+    $("#showMnemonicBtn").style.display = "none";
+    $("#copyMnemonicBtn").style.display = "none";
+    $("#mnemonicOkBtn").style.display = "none";
+
+    // Show only Step 4 fields
+    $("#saveHint").style.display = "block";
+
+    // Enable and highlight Save Keystore button
+    const saveBtn = $("#saveKeystoreBtn");
+    saveBtn.disabled = false;
+    saveBtn.classList.add("highlight");
+
+    setStatus("Mnemonic confirmed. Now encrypt & save your keystore.");
+    showToast("Step 4: Encrypt & Save Keystore (required)");
+};
   $("#saveKeystoreBtn").onclick = async () => {
     if (!activeWallet || !activeWallet.mnemonic) return setStatus("No wallet generated to save", true);
     if (!mnemonicConfirmed) return setStatus("Confirm the mnemonic first (Show Phrase → I Saved It)", true);
@@ -245,6 +259,16 @@
   });
 
   renderKeystoreList(); setStatus("Ready — keystore-only storage. Mnemonics are NOT stored in the browser.");
+// If wallets exist but none loaded, show hint
+window.addEventListener("load", () => {
+    const arr = loadKeystores();
+    if (arr.length > 0 && !activeWallet) {
+        setStatus("Wallet saved. Press LOAD to unlock it.");
+        showToast("Wallet ready → press LOAD");
+    }
+});
+
+
 })();
 
 

@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sardalla Wallet (SAR)</title>
+  <title>Sardalla Wallet (SAR) — Multiwallet</title>
 
-  <!-- Wallet CSS -->
+  <!-- Usa tu wallet.css -->
   <link rel="stylesheet" href="wallet.css" />
 </head>
 
@@ -29,11 +29,10 @@
     </div>
   </header>
 
-
-  <!-- MAIN CONTENT -->
+  <!-- MAIN -->
   <div class="wallet-main">
 
-    <!-- LEFT PANEL -->
+    <!-- LEFT: Create + Wallets list -->
     <div class="card card-left">
 
       <h2>Create Wallet</h2>
@@ -47,40 +46,44 @@
         <p style="color:#ffda1a; font-weight:600;">⚠ IMPORTANT — This phrase gives full access to your wallet.</p>
         <p style="color:#ffaaaa;">Never share it. Write it on paper and keep it safe.</p>
 
-        <textarea id="mnemonicDisplay" 
-                  rows="3" 
-                  style="width:100%; font-size:16px; padding:8px; display:none;"
-                  readonly></textarea>
+        <textarea id="mnemonicDisplay" rows="3" style="width:100%; font-size:16px; padding:8px; display:none;" readonly></textarea>
 
-        <button class="btn secondary" id="showMnemonicBtn">Show Phrase</button>
-        <button class="btn outline" id="copyMnemonicBtn" style="display:none;">Copy</button>
-        <button class="btn primary" id="mnemonicOkBtn" style="display:none; margin-top:8px;">I Saved It</button>
+        <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+          <button class="btn secondary" id="showMnemonicBtn">Show Phrase</button>
+          <button class="btn outline" id="copyMnemonicBtn" style="display:none;">Copy</button>
+          <button class="btn primary" id="mnemonicOkBtn" style="display:none;">I Saved It</button>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label style="font-size:13px;color:var(--muted)">Name this wallet (optional)</label>
+          <input id="walletNameInput" class="p-2" placeholder="My wallet name (e.g. Wallet 1)" style="width:100%; margin-top:6px;" />
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn full" id="saveMnemonicBtn">Save to Wallet List</button>
+            <button class="btn outline full" id="downloadMnemonicBtn">Download Mnemonic (txt)</button>
+          </div>
+        </div>
       </div>
 
-      <!-- ADDRESS -->
-      <div class="address-block" style="margin-top:20px;">
-        <div class="address-label">Your Address:</div>
+      <!-- Address (current loaded) -->
+      <div class="address-block" style="margin-top:18px;">
+        <div class="address-label">Loaded Address:</div>
         <div class="address-row">
           <code id="walletAddress">—</code>
         </div>
       </div>
 
-      <!-- QR -->
-      <div class="qr-wrapper" style="display:none;" id="qrBlock">
-        <div class="qr-label">QR Code</div>
-        <div class="qr-box" id="qrcode"></div>
-      </div>
-
-      <!-- DOWNLOAD KEYSTORE -->
-      <div class="actions-column" style="margin-top:18px;">
-        <h2>Backup Keystore</h2>
-        <input id="pwdEnc" type="password" placeholder="Keystore password" class="p-2" style="width:100%;" />
-        <button class="btn secondary full" id="downloadKeystore">Download Keystore</button>
+      <!-- Wallets list -->
+      <div style="margin-top:18px;">
+        <h2>Your Wallets</h2>
+        <div id="walletList" style="margin-top:8px;"></div>
+        <div style="margin-top:10px;">
+          <button class="btn outline" id="clearAllBtn">Clear All Wallets (localStorage)</button>
+        </div>
       </div>
 
     </div>
 
-    <!-- RIGHT PANEL -->
+    <!-- RIGHT: Balances, send, import -->
     <div class="card card-right">
 
       <h2>Balances</h2>
@@ -95,7 +98,6 @@
         </div>
       </div>
 
-
       <!-- SEND -->
       <div class="actions-column" style="margin-top:20px;">
         <h2>Send SAR</h2>
@@ -104,24 +106,31 @@
         <button class="btn primary full" id="sendSarBtn">Send</button>
       </div>
 
-
       <!-- IMPORT -->
       <div class="actions-column" style="margin-top:26px;">
         <h2>Import Wallet</h2>
 
-        <textarea id="importJson" rows="3" class="p-2" style="width:100%;"
-                  placeholder="Paste keystore JSON"></textarea>
+        <label style="font-size:13px;color:var(--muted)">Import mnemonic (paste)</label>
+        <textarea id="importMnemonic" rows="2" class="p-2" style="width:100%;" placeholder="seed phrase (12/24 words)"></textarea>
+        <input id="importName" class="p-2" placeholder="Optional wallet name" style="width:100%; margin-top:8px;" />
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn secondary full" id="importMnemonicBtn">Import Mnemonic</button>
+        </div>
+
+        <hr style="margin:16px 0; border-color:var(--border)" />
+
+        <label style="font-size:13px;color:var(--muted)">Or import encrypted keystore JSON</label>
+        <textarea id="importJson" rows="3" class="p-2" style="width:100%;" placeholder="Paste keystore JSON"></textarea>
         <input id="importPwd" type="password" placeholder="Keystore password" class="p-2" />
+        <button class="btn outline full" id="importKeystore">Import Keystore</button>
 
-        <button class="btn secondary full" id="importKeystore">Import Keystore</button>
-
-        <input id="importPk" placeholder="Private key (0x...)" class="p-2" style="width:100%; margin-top:12px;" />
+        <label style="font-size:13px;color:var(--muted); margin-top:12px">Or import private key</label>
+        <input id="importPk" placeholder="Private key (0x...)" class="p-2" style="width:100%; margin-top:6px;" />
         <button class="btn outline full" id="importPkBtn">Import Private Key</button>
       </div>
 
-
       <!-- TOKEN INFO -->
-      <div class="token-info">
+      <div class="token-info" style="margin-top:18px;">
         <div class="token-row">
           <span class="token-label">Token:</span>
           <span class="token-address">Sardalla (SAR)</span>

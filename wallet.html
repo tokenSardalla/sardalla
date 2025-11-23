@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="wallet.css" />
 
   <style>
-    /* Small inline styles for highlight and toast */
+    /* Small inline styles for highlight, toast and modal */
     .highlight {
       box-shadow: 0 0 0 3px rgba(255,218,26,0.18), 0 8px 20px rgba(0,0,0,0.2);
       animation: pulse 1.6s infinite;
@@ -32,6 +32,37 @@
       z-index: 2000;
       display: none;
       font-family: inherit;
+    }
+    /* Simple modal styles */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4,12,28,0.6);
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal {
+      background: linear-gradient(180deg, #0f2b56, #071733);
+      border-radius: 12px;
+      padding: 18px;
+      width: 420px;
+      max-width: calc(100% - 32px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      color: #fff;
+    }
+    .modal h3 { margin: 0 0 8px 0; font-size: 18px; }
+    .modal p { margin: 0 0 12px 0; color: #cfe3ff; font-size: 13px; }
+    .modal .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; }
+    .badge-saved {
+      background: #ffda1a;
+      color: #05203a;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      margin-left: 8px;
+      font-weight:700;
     }
   </style>
 </head>
@@ -197,6 +228,19 @@
 
 <!-- Toast -->
 <div id="toast" class="toast"></div>
+
+<!-- Unlock modal (replaces prompt) -->
+<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
+  <div class="modal" role="document" aria-modal="true">
+    <h3>Unlock Wallet</h3>
+    <p>Enter the keystore password to unlock this wallet. This password is not stored by the app.</p>
+    <input id="unlockPasswordInput" type="password" class="p-2" placeholder="Keystore password" style="width:100%; margin-top:6px;" />
+    <div class="modal-actions" style="margin-top:10px;">
+      <button class="btn" id="unlockCancel">Cancel</button>
+      <button class="btn primary" id="unlockConfirm">Unlock Wallet</button>
+    </div>
+  </div>
+</div>
 
 <!-- QR Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

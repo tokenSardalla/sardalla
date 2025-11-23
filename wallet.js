@@ -1,5 +1,5 @@
-/* Sardalla keystore-manager — improved UX (enforce save step, highlight, beforeunload) */
-/* Based on your previous code. Keystores-only storage. */
+/* Sardalla keystore-manager — improved UX (modal unlock + saved badge + fixed hide) */
+/* Keystores-only storage. App never stores mnemonics in clear. */
 
 (() => {
   const SAR = "0x851d720513fF135007dE95bd58B28514093bEb25";
@@ -15,8 +15,9 @@
   let provider = new ethers.providers.JsonRpcProvider(RPC);
   let activeWallet = null; // ethers.Wallet connected
   let tokenDecimals = 18;
-  let mnemonicConfirmed = false; // NEW: user must confirm mnemonic
+  let mnemonicConfirmed = false; // user must confirm mnemonic
   let lastSavedKeystoreId = null; // ID of last saved keystore (to detect unsaved state)
+  let pendingLoadIndex = null; // index requested to unlock via modal
 
   // Helpers
   const $ = (s) => document.querySelector(s);
@@ -58,7 +59,7 @@
   function createButton(text, cls = "btn") { const b = document.createElement("button"); b.className = cls; b.textContent = text; return b; }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-  // Render saved keystores list
+  // Render saved keystores list (adds Saved badge)
   function renderKeystoreList() {
     const arr = loadKeystores();
     const el = $("#walletList");
@@ -77,7 +78,9 @@
 
       const info = document.createElement("div");
       info.style.flex = "1";
-      info.innerHTML = `<div style="font-weight:700">${escapeHtml(item.name || ('Wallet ' + (idx+1)))}</div>
+      // add badge "Saved"
+      const savedBadge = (item.id ? `<span class="badge-saved">Saved</span>` : "");
+      info.innerHTML = `<div style="font-weight:700">${escapeHtml(item.name || ('Wallet ' + (idx+1)))} ${savedBadge}</div>
                         <div class="muted" style="font-size:12px">${truncate(item.address)}</div>`;
 
       const actions = document.createElement("div");
@@ -85,7 +88,7 @@
       actions.style.gap = "6px";
 
       const loadBtn = createButton("Load", "btn outline");
-      loadBtn.onclick = () => promptPasswordAndLoad(idx);
+      loadBtn.onclick = () => openUnlockModal(idx);
 
       const downloadBtn = createButton("Download", "btn secondary");
       downloadBtn.onclick = () => downloadKeystore(item);
@@ -124,13 +127,33 @@
     showToast("Keystore downloaded.");
   }
 
-  // Prompt for password and load keystore into memory (activeWallet)
-  async function promptPasswordAndLoad(idx) {
+  // OPEN unlock modal for index
+  function openUnlockModal(idx) {
+    pendingLoadIndex = idx;
+    const mb = $("#modalBackdrop");
+    if (!mb) return;
+    $("#unlockPasswordInput").value = "";
+    mb.style.display = "flex";
+    $("#unlockPasswordInput").focus();
+  }
+
+  // CLOSE unlock modal
+  function closeUnlockModal() {
+    pendingLoadIndex = null;
+    const mb = $("#modalBackdrop");
+    if (!mb) return;
+    mb.style.display = "none";
+  }
+
+  // HANDLE modal confirm -> decrypt keystore
+  async function handleUnlockConfirm() {
+    const pwd = $("#unlockPasswordInput").value;
+    if (!pwd || pwd.length < 1) return setStatus("Enter password to unlock", true);
+    const idx = pendingLoadIndex;
+    if (idx === null || idx === undefined) return setStatus("No wallet selected", true);
     const list = loadKeystores();
     const item = list[idx];
     if (!item) return setStatus("Keystore not found", true);
-    const pwd = prompt("Enter keystore password to unlock wallet (this prompt won't save the password):");
-    if (pwd === null) return; // cancelled
     setStatus("Decrypting keystore...");
     try {
       const w = await ethers.Wallet.fromEncryptedJson(item.keystore, pwd);
@@ -143,6 +166,7 @@
       lastSavedKeystoreId = item.id;
       setStatus("Wallet unlocked in memory.");
       showToast("Wallet unlocked.");
+      closeUnlockModal();
       await refreshBalances();
     } catch (e) {
       console.error(e);
@@ -158,7 +182,7 @@
       mnemonicConfirmed = false;
       lastSavedKeystoreId = null;
       setStatus("Wallet generated. Save the keystore to store it.");
-      // show mnemonic section
+      // show mnemonic section (keep visible)
       $("#mnemonicBox").style.display = "block";
       $("#mnemonicDisplay").value = w.mnemonic.phrase;
       $("#mnemonicDisplay").style.display = "none";
@@ -197,7 +221,7 @@
   };
   $("#mnemonicOkBtn").onclick = () => {
     mnemonicConfirmed = true;
-    $("#mnemonicBox").style.display = "block"; // keep visible to proceed
+    $("#mnemonicBox").style.display = "block"; // keep visible so user can save
     $("#saveHint").style.display = "block";
     const saveBtn = $("#saveKeystoreBtn");
     saveBtn.disabled = false;
@@ -205,7 +229,6 @@
     saveBtn.classList.add("highlight");
     setStatus("Mnemonic confirmed. Now encrypt & save the keystore (required).");
     showToast("Step 4: Encrypt & Save Keystore (required)");
-    // attach small attention animation, kept until saved
   };
 
   // Save keystore: encrypt current activeWallet with provided password and store
@@ -288,7 +311,6 @@
     try {
       const json = $("#importJson").value.trim();
       if (!json) return setStatus("Paste keystore JSON", true);
-      // Validate basic JSON - we won't decrypt here
       let parsed;
       try { parsed = JSON.parse(json); } catch (e) { return setStatus("Invalid JSON", true); }
       const name = $("#importJsonName").value.trim() || `Imported ${Date.now()}`;
@@ -360,9 +382,12 @@
     }
   };
 
+  // Modal buttons
+  $("#unlockConfirm").onclick = () => handleUnlockConfirm();
+  $("#unlockCancel").onclick = () => closeUnlockModal();
+
   // Page unload warning: if there's an active generated wallet that hasn't been saved, warn user
   window.addEventListener("beforeunload", function (e) {
-    // If we have an activeWallet (generated or loaded) but the last saved keystore id doesn't match the active address, warn
     if (activeWallet && lastSavedKeystoreId === null) {
       const msg = "You have generated a wallet and not saved its keystore. If you leave, it will be lost.";
       (e || window.event).returnValue = msg;
@@ -376,4 +401,5 @@
   setStatus("Ready — keystore-only storage. Mnemonics are NOT stored in the browser.");
 
 })();
+
 

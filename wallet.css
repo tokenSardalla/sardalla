@@ -430,3 +430,112 @@ h2 {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.wallet-card{
+  background: linear-gradient(135deg,#0a2a4d,#0e355f,#0a243f);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  color:white;
+}
+
+.wallet-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.wallet-name{
+  font-size:20px;
+  font-weight:600;
+}
+
+.wallet-online-dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#33dd4c;
+  box-shadow:0 0 8px #33dd4c;
+}
+
+.wallet-address-line{
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  opacity:0.85;
+}
+
+.copy-btn{
+  background:#ffda1a;
+  padding:4px 10px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.wallet-total-usd{
+  margin-top:20px;
+  font-size:32px;
+  font-weight:700;
+}
+
+.wallet-change{
+  margin-top:4px;
+  opacity:0.8;
+  font-size:14px;
+}
+
+.wallet-actions{
+  display:flex;
+  gap:10px;
+  margin:16px 0;
+}
+
+.action-btn{
+  flex:1;
+  background:#ffda1a;
+  border:none;
+  padding:12px;
+  border-radius:12px;
+  font-size:14px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.token-title{
+  margin-top:20px;
+  font-size:18px;
+  color:#fff;
+}
+
+.token-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.token-icon{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+}
+
+.token-info{
+  flex:1;
+  margin-left:10px;
+}
+
+.token-symbol{
+  font-size:16px;
+  font-weight:600;
+}
+
+.token-fiat{
+  min-width:70px;
+  text-align:right;
+  opacity:0.8;
+}
+
